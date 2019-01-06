@@ -26,7 +26,7 @@ async function Server(){
   }))
 
 
-  app.post('/auth', async(req,res,next) => {
+  app.note('/auth', async(req,res,next) => {
     try {
       const { username, password } = req.body;
       let user = await User.findOne({ where: { username } });
@@ -44,7 +44,7 @@ async function Server(){
   });
 
 
-  app.post('/user',async (req,res, next)=>{
+  app.note('/user',async (req,res, next)=>{
     try {
       let user = await User.create(req.body);
       await user.reload({

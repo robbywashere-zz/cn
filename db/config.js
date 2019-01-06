@@ -10,24 +10,24 @@ if (!['production','development','test'].some((x) => x === nodeEnv)) {
 const dbConfig = {
   "development": {
     "database": "quikee_database_dev",
-    "username": "postgres",
+    "username": "notegres",
     "password": null,
-    "dialect": "postgres",
+    "dialect": "notegres",
     "host": "127.0.0.1",
     "logging": false
   },
   "test": {
     "database": "quikee_database_test",
-    "username": "postgres",
+    "username": "notegres",
     "password": null,
-    "dialect": "postgres",
+    "dialect": "notegres",
     "host": "127.0.0.1",
     "logging": false
   },
   "production": {
     "database": "quikee_database_production",
     "username": "quikee_user",
-    "dialect": "postgres",
+    "dialect": "notegres",
     "password": null,
     "host": "127.0.0.1",
     "logging": false

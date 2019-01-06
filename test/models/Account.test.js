@@ -17,7 +17,7 @@ describe('Account model', ()=>{
   
     const account = await AccountFactory();
 
-    const post = await NoteFactory({ AccountId: account.id });
+    const note = await NoteFactory({ AccountId: account.id });
 
     await account.reloadWithNotes();
 

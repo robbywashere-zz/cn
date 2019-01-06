@@ -43,9 +43,9 @@ module.exports ={
       if ((forceReload) || (this.Accounts && !this.Accounts[0].Notes)) {
         await this.reloadWithNotes();
       } 
-      const posts = [];
-      this.Accounts.forEach(a=>posts.push(...a.Notes));
-      return posts;
+      const notes = [];
+      this.Accounts.forEach(a=>notes.push(...a.Notes));
+      return notes;
     },
     async validatePassword(password){
       const result = await bcrypt.compare(password, this.password);
