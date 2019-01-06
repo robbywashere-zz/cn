@@ -1,0 +1,33 @@
+{
+  "name": "quikee",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^2.0.1",
+    "bluebird": "^3.5.1",
+    "body-parser": "^1.18.3",
+    "config": "^1.30.0",
+    "cookie-session": "^2.0.0-beta.3",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "haikunator": "^2.0.0",
+    "http-errors": "^1.6.3",
+    "lodash": "^4.17.10",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "pg": "^7.4.3",
+    "sequelize": "4"
+  },
+  "scripts": {
+    "db:bootstrap":"node ./scripts/bootstrapDB.js",
+    "test": "mocha ./test/**/*.test.js"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "mocha": "^5.2.0",
+    "sinon": "^6.1.4"
+  }
+}
