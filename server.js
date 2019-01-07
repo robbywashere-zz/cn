@@ -3,7 +3,7 @@ const logger = require('./lib/logger');
 const config = require('config');
 const dbSync = require('./db/sync');
 const cookieSession = require('cookie-session');
-const { User, Account } = require('./models'); 
+const { User, Team } = require('./models'); 
 const { Unauthorized } = require('http-errors'); 
 
 function ProtectWithAuth(req,res,next) {
@@ -49,7 +49,7 @@ async function Server(){
       let user = await User.create(req.body);
       await user.reload({
         include: [{
-          model: Account,
+          model: Team,
           through: { attributes: [] }        
         }]
       })
@@ -64,13 +64,13 @@ async function Server(){
   app.use(ProtectWithAuth)
   //
 
-  app.get('/accounts', async(req,res,next) => {
+  app.get('/teams', async(req,res,next) => {
     try {
-      let accounts = await Account.findAll({ 
-        where: { '$Users.UserAccount.UserId$': req.session.userId },
+      let teams = await Team.findAll({ 
+        where: { '$Users.UserTeam.UserId$': req.session.userId },
         include: [ { model: User, through: { attributes: [] } }]
       });
-      res.send(accounts);
+      res.send(teams);
     } catch(e) {
       next(e);
     } 

@@ -1,16 +1,30 @@
 const {
-  set, get, clone, camelCase,
+  get,
+  clone,
+  camelCase,
 } = require('lodash');
 const DB = require('../db');
 
-const { pickBy, isArray } = require('lodash');
-const sequelize = require('sequelize');
+const {
+  pickBy,
+} = require('lodash');
 const slurpDir = require('../lib/slurpDir');
 
 
-function newRegistry(){
-  return ({ inits: {}, models: {}});
+function newRegistry() {
+  return ({
+    inits: {},
+    models: {}
+  });
 }
+
+
+
+Array.prototype.toJSON = function () {
+  return this.length && typeof this[0] !== 'undefined' && this[0].toJSON ?
+    this.map(i => i.toJSON()) :
+    this;
+};
 
 
 function loadObject(model, registry) {
@@ -33,7 +47,9 @@ function loadObject(model, registry) {
 
   // update by id
   modelClass.updateById = function updateById(id, ups, q = {}, o) {
-    q.where = { ...q.where, id };
+    q.where = { ...q.where,
+      id
+    };
     return modelClass.update(ups, q, o);
   };
 
@@ -88,7 +104,9 @@ function initObjects(modelRegistry) {
   Object.keys(modelRegistry.models).forEach((name) => {
     const model = modelRegistry.models[name];
 
-    if (modelRegistry.inits && modelRegistry.inits[name]) { modelRegistry.inits[name].bind(model)(modelRegistry.models); }
+    if (modelRegistry.inits && modelRegistry.inits[name]) {
+      modelRegistry.inits[name].bind(model)(modelRegistry.models);
+    }
 
     const scopes = get(model, 'options.scopes');
 
@@ -98,13 +116,19 @@ function initObjects(modelRegistry) {
         let fnById;
         if (typeof scopes[k] === 'function') {
           fn = function (arg, opts) {
-            return this.scope({ method: [k, arg] }).findAll(opts);
+            return this.scope({
+              method: [k, arg]
+            }).findAll(opts);
           };
           fnById = function (arg, id, opts) {
-            return this.scope({ method: [k, arg] }).findById(id, opts);
+            return this.scope({
+              method: [k, arg]
+            }).findById(id, opts);
           };
           model[`${k}Fn`] = function (arg) {
-            return this.scope({ method: [k, arg] });
+            return this.scope({
+              method: [k, arg]
+            });
           };
         } else {
           fn = function (opts) {

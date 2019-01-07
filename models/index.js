@@ -1,3 +1,3 @@
-const bootstrap = require('./_modelLoader');
+const bootstrap = require('./_model-loader');
 
 module.exports = bootstrap(__dirname);

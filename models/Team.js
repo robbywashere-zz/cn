@@ -3,21 +3,26 @@ const Haikunator = require('haikunator');
 const haikunator = new Haikunator();
 
 module.exports = {
-  Name: 'Account',
+  Name: 'Team',
   Properties: {
     name: {
       type: Sequelize.STRING,
-      defaultValue: ()=> haikunator.haikunate()
+      defaultValue: () => haikunator.haikunate()
     },
   },
-  Init({ User, Note }){
+  Init({
+    User,
+    Note
+  }) {
     this.hasMany(Note);
-    this.belongsToMany(User, { 
-      through: 'UserAccount', 
+    this.belongsToMany(User, {
+      through: 'UserTeam',
       joinTableAttributes: [],
-      attributes: [] 
+      attributes: []
     });
-    this.addScope('withNotes', { include: [ Note ] });
+    this.addScope('withNotes', {
+      include: [Note]
+    });
   },
   ScopeFunctions: true,
 }

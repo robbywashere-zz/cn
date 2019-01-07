@@ -1,9 +1,6 @@
 const bcrypt = require('bcrypt');
-const { omit } = require('lodash');
 const Sequelize = require('sequelize');
-const { Op } = Sequelize;
-
-module.exports ={
+module.exports = {
   Name: 'User',
   Properties: {
     username: {
@@ -17,12 +14,31 @@ module.exports ={
       omit: true,
     }
   },
-  Init({ Account, Note }) {
-    this.belongsToMany(Account, { 
-      through: 'UserAccount', 
+  Init({
+    Team,
+    UserTeam,
+    Note
+  }) {
+    this.belongsToMany(Team, {
+      through: 'UserTeam',
     });
-    this.addScope('withNotes', {
-      include: [ { model: Account, include: [ { model: Note } ]  }] 
+    this.belongsToMany(Note, {
+      through: "TeamUser",
+      include: [{
+        model: UserTeam,
+        as: "TeamUser",
+        include: [{
+          model: Note
+        }]
+      }]
+    });
+    this.addScope('withTeamNotes', {
+      include: [{
+        model: Team,
+        include: [{
+          model: Note
+        }]
+      }]
     });
   },
   ScopeFunctions: true,
@@ -31,26 +47,26 @@ module.exports ={
       user.password = await bcrypt.hash(user.password, 10);
     },
     async afterCreate(user) {
-      const { Account }  = this.sequelize.models;
-      if (!user.Accounts || !user.Accounts.length) {
-        const account = await Account.create();
-        return await user.addAccount(account);
+      const {
+        Team
+      } = this.sequelize.models;
+      if (!user.Teams || !user.Teams.length) {
+        const team = await Team.create();
+        return await user.addTeam(team);
       }
     }
   },
   Methods: {
-    async getNotes(forceReload){
-      if ((forceReload) || (this.Accounts && !this.Accounts[0].Notes)) {
-        await this.reloadWithNotes();
-      } 
+    async getTeamNotes(forceReload) {
+      if ((forceReload) || (this.Teams && !this.Teams[0].Notes)) {
+        await this.reloadWithTeamNotes();
+      }
       const notes = [];
-      this.Accounts.forEach(a=>notes.push(...a.Notes));
+      this.Teams.forEach(a => notes.push(...a.Notes));
       return notes;
     },
-    async validatePassword(password){
-      const result = await bcrypt.compare(password, this.password);
-      return result;
+    async validatePassword(password) {
+      return await bcrypt.compare(password, this.password);
     },
   }
 }
-
