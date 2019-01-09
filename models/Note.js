@@ -148,9 +148,6 @@ module.exports = {
     }
   },
   Methods: {
-    permitsUser(User) {
-      if (this.UserTeam) {}
-    },
     async getUsers(opts = {}) {
       const {
         User

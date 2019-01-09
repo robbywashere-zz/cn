@@ -1,3 +1,3 @@
-const bootstrap = require('./_model-loader');
+const modelize = require('../lib/model-loader');
 
-module.exports = bootstrap(__dirname);
+module.exports = modelize(__dirname);
