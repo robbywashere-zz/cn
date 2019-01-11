@@ -5,17 +5,27 @@ const {
   Attachment
 } = require("../../models");
 
+class Uniq {
+  constructor(u_str = "uniqStr") {
+    this.u_str = u_str;
+    this.counter = 0;
+  }
+  get str() {
+    return this.u_str + this.counter++;
+  }
+  get email() {
+    return this.str + '@' + this.str + '.com'
+  }
+}
 
-const UniqueStrings = (function () {
-  let counter = 0;
-  return () => 'UniqStr' + counter++
-})();
+const uniq = new Uniq();
 
 
 function UserFactory(options) {
   return User.create({
     username: "roy",
     password: "gbiv",
+    email: uniq.email,
     ...options
   })
 }
@@ -42,8 +52,9 @@ async function UserTeamFactory({
   teamOptions = {}
 } = {}) {
   const user = await User.create({
-    username: UniqueStrings(),
+    username: uniq.str,
     password: 'password',
+    email: uniq.email,
     ...userOptions
   });
 
@@ -62,6 +73,7 @@ async function UserTeamFactory({
 }
 
 module.exports = {
+  uniq,
   UserFactory,
   TeamFactory,
   NoteFactory,

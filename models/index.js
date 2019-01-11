@@ -1,3 +1,1 @@
-const modelize = require('../lib/model-loader');
-
-module.exports = modelize(__dirname);
+module.exports = (require('../lib/model-loader'))(__dirname);

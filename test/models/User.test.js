@@ -4,7 +4,8 @@ const {
 } = require('../../models');
 const {
   UserTeamFactory,
-  TeamFactory
+  TeamFactory,
+  uniq
 } = require('../helpers');
 const assert = require('assert');
 const dbSync = require('../../db/sync');
@@ -18,7 +19,8 @@ describe('User model', () => {
       - should create an Team for User`, async () => {
     const user = await User.create({
       username: "roy",
-      password: "gbiv"
+      password: "gbiv",
+      email: uniq.email
     });
     assert(user instanceof User);
     await user.reload({
@@ -48,7 +50,8 @@ describe('User model', () => {
   it(`- should omit password field on #.serialize`, async () => {
     const user = await User.create({
       username: "roy",
-      password: "gbiv"
+      password: "gbiv",
+      email: uniq.email
     });
     assert.equal(user.serialize().password, undefined)
     assert.equal(user.serialize().username, "roy")

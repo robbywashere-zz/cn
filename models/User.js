@@ -12,7 +12,12 @@ module.exports = {
       type: Sequelize.STRING,
       allowNull: false,
       omit: true,
-    }
+    },
+    email: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: true
+    },
   },
   Init({
     Team,
@@ -23,10 +28,10 @@ module.exports = {
       through: 'UserTeam',
     });
     this.belongsToMany(Note, {
-      through: "TeamUser",
+      through: "TeamNotes",
       include: [{
         model: UserTeam,
-        as: "TeamUser",
+        as: "TeamNotes",
         include: [{
           model: Note
         }]
