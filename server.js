@@ -28,7 +28,7 @@ function BaseServer(...middlewares) {
   return app;
 }
 
-async function Server(app = BaseBase()) {
+async function Server(app = BaseServer()) {
   await dbSync(true);
   app.use('/', PublicRoutes());
   app.use('/', ProtectedRoutes());
