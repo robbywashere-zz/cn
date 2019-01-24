@@ -23,7 +23,7 @@ const uniq = new Uniq();
 
 function UserFactory(options) {
   return User.create({
-    username: "roy",
+    username: uniq.str,
     password: "gbiv",
     email: uniq.email,
     ...options

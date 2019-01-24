@@ -10,15 +10,36 @@ module.exports = {
       defaultValue: () => haikunator.haikunate()
     },
   },
+  Scopes: {
+    belongingTo(userId) {
+      userId = userId.id || userId;
+      return {
+        where: {
+          '$Users.UserTeam.UserId$': userId
+        },
+        include: [{
+          model: this.sequelize.models.User,
+          through: {
+            attributes: [],
+          }
+        }]
+      }
+    }
+
+  },
   Init({
     User,
     Note
   }) {
     this.hasMany(Note);
+
+    this.addScope('withUsers', {
+      include: [{
+        model: User,
+      }]
+    });
     this.belongsToMany(User, {
       through: 'UserTeam',
-      joinTableAttributes: [],
-      attributes: []
     });
     this.addScope('withNotes', {
       include: [Note]

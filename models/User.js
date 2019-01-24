@@ -1,5 +1,9 @@
 const bcrypt = require('bcrypt');
 const Sequelize = require('sequelize');
+const {
+  Op
+} = Sequelize;
+
 module.exports = {
   Name: 'User',
   Properties: {
@@ -22,11 +26,13 @@ module.exports = {
   Init({
     Team,
     UserTeam,
-    Note
+    Note,
+    User
   }) {
     this.belongsToMany(Team, {
       through: 'UserTeam',
     });
+
     this.belongsToMany(Note, {
       through: "TeamNotes",
       include: [{
@@ -35,6 +41,13 @@ module.exports = {
         include: [{
           model: Note
         }]
+      }]
+    });
+
+
+    this.addScope('withTeam', {
+      include: [{
+        model: Team,
       }]
     });
     this.addScope('withTeamNotes', {
@@ -61,7 +74,49 @@ module.exports = {
       }
     }
   },
+  StaticMethods: {},
+  Scopes: {
+    withTeams(id) {
+      return {
+        where: {
+          id
+        },
+        include: [{
+          model: this.sequelize.models.Team,
+        }]
+      }
+    },
+    teamMembers(userId) {
+      return {
+        where: {
+          "$Teams.Users.id$": userId
+        },
+        include: [{
+          model: this.sequelize.models.Team,
+          include: [{
+            model: this.sequelize.models.User
+          }]
+        }]
+      }
+    }
+  },
   Methods: {
+    async getTeamMembers() {
+      const {
+        User
+      } = this.sequelize.models;
+      const teams = await this.getTeams({
+        include: [{
+          model: User, //User?
+          where: {
+            id: {
+              [Op.ne]: this.id
+            }
+          }
+        }]
+      });
+      return teams.reduce((users, team) => [...users, ...team.Users], []).filter(Boolean);
+    },
     async getTeamNotes(forceReload) {
       if ((forceReload) || (this.Teams && !this.Teams[0].Notes)) {
         await this.reloadWithTeamNotes();

@@ -14,6 +14,7 @@ module.exports = {
     },
     title: {
       type: Sequelize.STRING,
+      defaultValue: "UNTITLED"
     },
     body: {
       type: Sequelize.TEXT,
@@ -24,6 +25,25 @@ module.exports = {
   },
   ScopeFunctions: true,
   Scopes: {
+    findAllForUser(userId, id) {
+      userId = userId.id || userId;
+      return {
+        where: {
+          "$Team.Users.id$": userId,
+        },
+        include: [{
+          model: this.sequelize.models.Team,
+          attributes: [],
+          include: [{
+            model: this.sequelize.models.User,
+            attributes: []
+          }]
+        }]
+      }
+    },
+
+
+
     userRead(User) {
       const UserId = User.id || User;
       return {
@@ -148,6 +168,7 @@ module.exports = {
     }
   },
   Methods: {
+
     async getUsers(opts = {}) {
       const {
         User

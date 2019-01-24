@@ -12,6 +12,7 @@
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
+    "express-validator": "^5.3.1",
     "fast-diff": "^1.2.0",
     "haikunator": "^2.0.0",
     "http-errors": "^1.6.3",
@@ -19,6 +20,7 @@
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "pg": "^7.4.3",
+    "pg-native": "^3.0.0",
     "sequelize": "4"
   },
   "scripts": {
@@ -29,6 +31,7 @@
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "mocha": "^5.2.0",
-    "sinon": "^6.1.4"
+    "sinon": "^6.1.4",
+    "supertest": "^3.4.2"
   }
 }

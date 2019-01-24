@@ -9,6 +9,7 @@ const {
 const {
   NoteFactory,
   UserTeamFactory,
+  TeamFactory,
 } = require('../helpers');
 const assert = require('assert');
 const dbSync = require('../../db/sync');
@@ -87,6 +88,32 @@ describe('Note model', () => {
     await user.addNote(note);
     let users = await (note.getUsers());
     assert.equal(users.length, 1)
+
+  });
+
+
+
+  it('- should #.findAllForUser()', async () => {
+
+    const {
+      team,
+      user
+    } = await UserTeamFactory();
+    const team2 = await TeamFactory();
+    await Note.create({
+      TeamId: team.id
+    });
+    await Note.create({
+      TeamId: team.id
+    });
+    await Note.create({
+      TeamId: team2.id
+    });
+    await team2.addUser(user);
+
+    const notes = await Note.findAllForUser(user.id);
+
+    assert.equal(notes.length, 3);
 
   });
 

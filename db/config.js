@@ -1,5 +1,5 @@
-require("dotenv").config()
 const config = require("config");
+
 
 module.exports = {
   database: config.get("DB_NAME"),
