@@ -4,6 +4,20 @@
 `yarn install`
 `npm install`
 
+# Requirements #
+
+- postgres 9.6+
+
+- development environment uses .env file in the root, expecting ...
+    
+  ```
+  DB_USERNAME="postgres"
+  DB_HOST="localhost"
+  DB_NAME="postgres"
+  ```
+- `yarn db:bootstrap` `npm run db:bootstrap`
+
+
 # Start
 
 `yarn start`
@@ -16,7 +30,7 @@
 
 ## Create User
 
-`http localhost:3000/user username=foo password='bar'`
+`http localhost:3000/user username=foo password='bar' email='foo@bar.com'`
 
 
 ## Auth User
