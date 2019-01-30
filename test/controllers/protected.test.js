@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test'
 
 const {
   UserFactory,
+  TagFactory,
   TeamFactory,
   NoteFactory
 } = require('../helpers');
@@ -101,31 +102,124 @@ describe('protected routes', function () {
 
   })
   describe("GET /notes", function () {
-
     it("should retreive all notes for user", async function () {
-
       const excludedTeam = await TeamFactory();
       await NoteFactory({
         TeamId: excludedTeam.id
       });
-
       await authedUser.reloadWithTeam();
       const note = await NoteFactory({
         TeamId: authedUser.Teams[0].id
       });
-
       const res = await request(app)
         .get("/notes")
         .expect(200)
-
       assert.equal(res.body.length, 1)
       assert.equal(res.body[0].id, note.id)
-
     });
-
   });
 
-  describe("POST /attachment/:note_id", function () {
+  describe("GET /search/notes?title=<string>?regexp=true", function () {
+    it("should get notes by title query", async function () {
+      const {
+        Teams: teams
+      } = await authedUser.reloadWithTeam();
+      const note1 = await NoteFactory({
+        TeamId: teams[0].id,
+        title: "TITLE"
+      });
+      const note2 = await NoteFactory({
+        TeamId: teams[0].id,
+        title: "NOPE"
+      });
+      const found1 = await request(app).get("/search/notes").query({
+        title: "TI.*",
+        regexp: true
+      }).expect(200);
+      assert.equal(found1.body.length, 1);
+      assert.equal(found1.body[0].id, note1.id);
+    });
+  })
+
+  describe("GET /search/notes?tags=[...]", function () {
+    it("should get notes by tags in query", async function () {
+      const {
+        Teams: teams
+      } = await authedUser.reloadWithTeam();
+      const note1 = await NoteFactory({
+        TeamId: teams[0].id
+      });
+      const note2 = await NoteFactory({
+        TeamId: teams[0].id
+      });
+      const tag1 = await TagFactory({
+        name: 'TAG1'
+      });
+      const tag2 = await TagFactory({
+        name: 'TAG2'
+      });
+      await note1.addTag(tag1);
+      await note1.reloadWithTags();
+      await note2.addTag(tag2);
+      await note2.reloadWithTags();
+      const found1 = await request(app).get("/search/notes").query({
+        tags: ['TAG1']
+      }).expect(200);
+      const found2 = await request(app).get("/search/notes").query({
+        tags: ['TAG2']
+      }).expect(200);
+      assert.equal(found1.body[0].id, note1.id)
+      assert.equal(found2.body[0].id, note2.id)
+    });
+  })
+
+  describe("POST /notes/:note_id/tags", function () {
+    it("should add tags to note", async function () {
+      const {
+        Teams: teams
+      } = await authedUser.reloadWithTeam();
+      const note = await NoteFactory({
+        TeamId: teams[0].id
+      });
+      const tagNames = ['one', 'two', 'three'];
+      await request(app)
+        .post(`/notes/${note.id}/tags`)
+        .send(tagNames)
+        .expect(201)
+      await note.reloadWithTags();
+      assert.deepEqual(tagNames, note.Tags.map(t => t.name));
+    });
+  })
+
+  describe("POST /notes/:note_id/read", function () {
+    it("should mark note as read", async function () {
+      const {
+        Teams: teams
+      } = await authedUser.reloadWithTeam();
+      const note = await NoteFactory({
+        TeamId: teams[0].id
+      });
+      await request(app)
+        .post(`/notes/${note.id}/read`)
+        .expect(201)
+    })
+  })
+
+  describe("POST /notes/:note_id/attachment", function () {
+    it("should NOT add new attchment for other note", async function () {
+      const otherTeam = await TeamFactory();
+      const otherNote = await NoteFactory({
+        TeamId: otherTeam.id
+      });
+
+      await request(app)
+        .post(`/notes/${otherNote.id}/attachment`)
+        .send({
+          name: "NAME"
+        })
+        .expect(404)
+
+    });
     it("should add new attachment to note", async function () {
       const {
         Teams: teams
@@ -135,7 +229,7 @@ describe('protected routes', function () {
       });
 
       const res = await request(app)
-        .post(`/attachment/${note.id}`)
+        .post(`/notes/${note.id}/attachment`)
         .send({
           name: "NAME"
         })

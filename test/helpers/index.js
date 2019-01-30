@@ -1,5 +1,6 @@
 const {
   User,
+  Tag,
   Note,
   Team,
   Attachment
@@ -32,6 +33,12 @@ function UserFactory(options) {
 
 function NoteFactory(options) {
   return Note.create({
+    ...options
+  })
+}
+
+function TagFactory(options) {
+  return Tag.create({
     ...options
   })
 }
@@ -74,6 +81,7 @@ async function UserTeamFactory({
 
 module.exports = {
   uniq,
+  TagFactory,
   UserFactory,
   TeamFactory,
   NoteFactory,

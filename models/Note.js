@@ -25,7 +25,50 @@ module.exports = {
   },
   ScopeFunctions: true,
   Scopes: {
+    searchByTagNames(tags = []) {
+      return {
+        where: {
+          "$Tags.name$": {
+            [Op.in]: [].concat(tags)
+          }
+        },
+        include: [{
+          model: this.sequelize.models.Tag,
+        }]
+      }
+    },
+    searchTitle({
+      title: titleStr,
+      regexp = false
+    }) {
+      const title = (!regexp) ? {
+        [Op.like]: `%${titleStr}%`
+      } : {
+        [Op.regexp]: titleStr
+      };
+      return {
+        where: {
+          title
+        },
+      }
+    },
     findAllForUser(userId, id) {
+      userId = userId.id || userId;
+      return {
+        where: {
+          "$Team.Users.id$": userId,
+        },
+        include: [{
+          model: this.sequelize.models.Team,
+          attributes: [],
+          include: [{
+            model: this.sequelize.models.User,
+            attributes: []
+          }]
+        }]
+      }
+    },
+    forUser(userId, id) {
       userId = userId.id || userId;
       return {
         where: {

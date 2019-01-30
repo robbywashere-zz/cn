@@ -1,11 +1,15 @@
 const Router = require('express');
 const {
   User,
+  Tag,
   Note,
   Attachment,
   Team,
   UserTeam
 } = require('../models');
+const {
+  slugify
+} = require("../lib/slugify");
 const {
   Unauthorized,
   NotFound,
@@ -16,7 +20,9 @@ const {
 } = require("../lib/validator");
 const {
   param,
-  check
+  query,
+  check,
+  body
 } = require('express-validator/check');
 
 function ProtectWithAuth(req, res, next) {
@@ -39,25 +45,93 @@ function ProtectedRoutes(router = new Router()) {
       next(e);
     }
   });
+  //const GetNoteTagsValid = Validator.new([query("tags").exists()])
+  router.get("/search/notes", async function (req, res) {
+    const {
+      tags,
+      title,
+      regexp
+    } = req.query;
+
+    let notesQuery = Note.forUserFn(req.session.userId)
+    if (tags) notesQuery = notesQuery.searchByTagNamesFn(tags);
+    if (title) notesQuery = notesQuery.searchTitleFn({
+      title,
+      regexp: regexp === "true"
+    });
+    res.send(await notesQuery.findAll());
+
+  });
   router.get('/notes/:note_id', async (req, res, next) => {
     try {
-      let notes = await Note.findAllForUserForId(req.session.userId, req.params.note_id);
+      let note = await Note.findAllForUserForId(req.session.userId, req.params.note_id);
+      if (!note) throw new NotFound();
+      res.send(note.serialize());
+    } catch (e) {
+      next(e);
+    }
+  });
+  //query param read=true?
+  router.post('/notes/:note_id/read', async (req, res, next) => {
+    try {
+      let note = await Note.findAllForUserForId(req.session.userId, req.params.note_id);
+      if (!note) throw new NotFound();
+      const read = await note.markAsReadBy(req.session.userId);
+      res.status(201).send(read.serialize());
+    } catch (e) {
+      next(e);
+    }
+  });
+  router.get('/unread_notes', async (req, res, next) => {
+    try {
+      let notes = await Note.unread(req.session.userId);
       res.send(notes.serialize());
     } catch (e) {
       next(e);
     }
   });
 
-  router.post('/attachment/:note_id', async (req, res, next) => {
+  router.get('/team/:team_id/uread_notes', async (req, res, next) => {
     try {
-      let note = await Note.findAllForUserForId(req.session.userId, req.params.note_id);
+      const {
+        team_id: TeamId
+      } = req.params;
+      let notes = await Note.unread(req.session.userId, TeamId);
+      res.send(notes.serialize());
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  const TagsValid = Validator.new([body().isArray()]);
+  router.post('/notes/:note_id/tags', TagsValid, async (req, res, next) => {
+    const {
+      note_id: NoteId
+    } = req.params;
+    let note = await Note.findAllForUserForId(req.session.userId, NoteId);
+    if (!note) throw new NotFound();
+    const tagValues = req.body.map(t => ({
+      name: slugify(t.toString().substr(0, 16)),
+    }));
+    const tags = await Tag.bulkCreate(tagValues, {
+      returning: true
+    });
+    await note.addTags(tags);
+    res.status(201).send(tags);
+
+  })
+
+  //change to /notes/:note_id/attachment
+  router.post('/notes/:note_id/attachment', async (req, res, next) => {
+    try {
+      const {
+        note_id: NoteId
+      } = req.params;
+      let note = await Note.findAllForUserForId(req.session.userId, NoteId);
       if (!note) throw new NotFound();
       const {
         name
       } = req.body;
-      const {
-        note_id: NoteId
-      } = req.params;
       const attachment = await Attachment.create({
         name,
         NoteId

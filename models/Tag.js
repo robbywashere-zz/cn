@@ -4,7 +4,10 @@ module.exports = {
   Name: 'Tag',
   Properties: {
     name: {
-      type: sequelize.STRING,
+      type: sequelize.STRING(16),
+      validate: {
+        len: [1, 16]
+      },
       allowNull: false
     }
   },
