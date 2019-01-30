@@ -18,11 +18,6 @@ const {
 function BaseServer(...middlewares) {
   const app = express();
   app.use(require('body-parser').json());
-  app.use(cookieSession({
-    name: 'session',
-    keys: ['$3cr3tzzzzzz'],
-    maxAge: 1 * 60 * 60 * 1000 // 1 hour
-  }))
   middlewares.forEach(mw => app.use(mw))
   app.use(ErrorHandler());
   return app;
@@ -30,8 +25,12 @@ function BaseServer(...middlewares) {
 
 async function Server(app = BaseServer()) {
   await dbSync(true);
-  app.use('/', PublicRoutes());
-  app.use('/', ProtectedRoutes());
+  app.use(cookieSession({
+    name: 'session',
+    keys: [config.get('APP_SECRET')],
+    maxAge: 1 * 60 * 60 * 1000 // 1 hour
+  }))
+  app.use('/api', PublicRoutes(), ProtectedRoutes());
   app.use(ErrorHandler());
   return app;
 }

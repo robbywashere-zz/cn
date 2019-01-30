@@ -32,7 +32,9 @@ function PublicRoutes(router = new Router()) {
       }
       const result = await user.validatePassword(password);
       if (!result) throw new Unauthorized();
-      req.session.userId = user.id;
+      req.session = { ...req.session,
+        userId: user.id
+      };
       res.send(user.serialize());
     } catch (e) {
       next(e);
