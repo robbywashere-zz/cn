@@ -86,7 +86,7 @@ module.exports = {
         }]
       }
     },
-    teamMembers(userId) {
+    forUser(userId) {
       return {
         where: {
           "$Teams.Users.id$": userId

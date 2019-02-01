@@ -10,8 +10,13 @@ const {
   body
 } = require('express-validator/check');
 const {
-  Unauthorized
+  Unauthorized,
+  BadRequest
 } = require('http-errors');
+const {
+  Create,
+  Model
+} = require('./shared')
 
 function PublicRoutes(router = new Router()) {
 
@@ -32,7 +37,8 @@ function PublicRoutes(router = new Router()) {
       }
       const result = await user.validatePassword(password);
       if (!result) throw new Unauthorized();
-      req.session = { ...req.session,
+      req.session = {
+        ...req.session,
         userId: user.id
       };
       res.send(user.serialize());
@@ -43,17 +49,8 @@ function PublicRoutes(router = new Router()) {
   });
 
 
-  let ValidateUser = Validator.new([body('username').isString(), body('email').isString(), body('password').isString()]);
-  router.post('/user', ValidateUser, async (req, res, next) => {
-    try {
+  router.use('/user', Model(User), Create());
 
-      let user = await User.create(req.body);
-      await user.reloadWithTeam();
-      res.send(user.serialize());
-    } catch (e) {
-      next(e);
-    }
-  });
   return router;
 }
 

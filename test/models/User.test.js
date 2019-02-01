@@ -64,7 +64,7 @@ describe('User model', () => {
 
     });
 
-    it('- should  #.getTeamMembers(user_id)', async () => {
+    it('- should respond to #.forUser(user_id)', async () => {
 
       const team = await TeamFactory();
       const excludeUser = await UserFactory();
@@ -75,8 +75,8 @@ describe('User model', () => {
 
       await team.reloadWithUsers();
       const wantedTeamIds = team.Users.toJSON().map(u => u.id);
-      const teamMembers = await User.teamMembers(user.id);
-      assert.deepEqual(wantedTeamIds, teamMembers.map(tm => tm.id));
+      const forUser = await User.forUser(user.id);
+      assert.deepEqual(wantedTeamIds, forUser.map(tm => tm.id));
     });
     it(`- should respond to #.create({ username, password })
       - create an instance of User
@@ -111,7 +111,7 @@ describe('User model', () => {
     });
 
 
-    it('- should #.getTeamMembers()', async () => {
+    it('- should  to #.getTeamMembers()', async () => {
 
       const team = await TeamFactory();
       const user = await UserFactory();

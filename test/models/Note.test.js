@@ -111,7 +111,7 @@ describe('Note model', () => {
     });
     await team2.addUser(user);
 
-    const notes = await Note.findAllForUser(user.id);
+    const notes = await Note.forUser(user.id);
 
     assert.equal(notes.length, 3);
 

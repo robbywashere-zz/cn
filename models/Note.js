@@ -25,6 +25,44 @@ module.exports = {
   },
   ScopeFunctions: true,
   Scopes: {
+    userUnread(user) {
+      const UserId = user.id || user;
+      const {
+        Read,
+        Team,
+        User
+      } = this.sequelize.models;
+      return {
+        where: {
+          '$Team.Users.id$': {
+            [Op.eq]: UserId
+          },
+          [Op.or]: [{
+              '$Reads.UserId$': {
+                [Op.ne]: UserId
+              }
+            },
+            {
+              '$Reads.UserId$': null
+            },
+          ],
+        },
+        include: [{
+            model: Team,
+            include: User
+          },
+          {
+            model: Read,
+            required: false,
+            where: {
+              '$Reads.UserId$': {
+                [Op.eq]: UserId
+              },
+            },
+          },
+        ],
+      };
+    },
     searchByTagNames(tags = []) {
       return {
         where: {
@@ -52,7 +90,7 @@ module.exports = {
         },
       }
     },
-    findAllForUser(userId, id) {
+    forUser(userId) {
       userId = userId.id || userId;
       return {
         where: {
@@ -68,7 +106,15 @@ module.exports = {
         }]
       }
     },
-    forUser(userId, id) {
+    forTeam(TeamId) {
+      TeamId = TeamId.team || TeamId;
+      return {
+        where: {
+          TeamId
+        }
+      }
+    },
+    forUser(userId) {
       userId = userId.id || userId;
       return {
         where: {
@@ -84,9 +130,6 @@ module.exports = {
         }]
       }
     },
-
-
-
     userRead(User) {
       const UserId = User.id || User;
       return {
@@ -166,6 +209,7 @@ module.exports = {
       User: user,
       Team: team
     }) {
+      throw new Error('DEPRECATED');
       const UserId = user.id || user;
       const TeamId = team.id || team;
       const {

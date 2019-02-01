@@ -53,8 +53,6 @@ describe('protected routes', function () {
         .expect(200);
 
       assert.equal(res.body.id, teamId);
-
-
       const res2 = await request(app)
         .get(`/teams/${otherTeam.id}`)
         .expect(200);
@@ -102,7 +100,7 @@ describe('protected routes', function () {
 
   })
   describe("GET /notes", function () {
-    it("should retreive all notes for user", async function () {
+    it("should retreive all notes for authed user", async function () {
       const excludedTeam = await TeamFactory();
       await NoteFactory({
         TeamId: excludedTeam.id
@@ -118,8 +116,69 @@ describe('protected routes', function () {
       assert.equal(res.body[0].id, note.id)
     });
   });
+  describe("GET /notes?teamId=<teamId>", function () {
+    it("should retreive all notes for authed user by TeamId", async function () {
+      await (await TeamFactory()).addUser(authedUser);
+      await authedUser.reloadWithTeam();
+      const [teamAId, teamBId] = authedUser.Teams.map(t => t.id);
+      const noteA = await NoteFactory({
+        TeamId: teamAId
+      });
+      const noteB = await NoteFactory({
+        TeamId: teamBId
+      });
+      const resA = await request(app)
+        .get("/notes")
+        .query({
+          teamId: teamAId
+        })
+        .expect(200);
+      assert.equal(resA.body.length, 1)
+      assert.equal(resA.body[0].id, noteA.id)
 
-  describe("GET /search/notes?title=<string>?regexp=true", function () {
+      const resB = await request(app)
+        .get("/notes")
+        .query({
+          teamId: teamBId
+        })
+        .expect(200);
+      assert.equal(resB.body.length, 1)
+      assert.equal(resB.body[0].id, noteB.id)
+
+    });
+  });
+  describe("GET /notes?read=<true|false>", function () {
+    let note;
+    beforeEach(async () => {
+
+      const excludedTeam = await TeamFactory();
+      await NoteFactory({
+        TeamId: excludedTeam.id
+      });
+      await authedUser.reloadWithTeam();
+      note = await NoteFactory({
+        TeamId: authedUser.Teams[0].id
+      });
+
+    })
+    it("should retreive all read=true notes for authed user", async function () {
+      await note.markAsReadBy(authedUser);
+      const res = await request(app)
+        .get("/notes?read=true")
+        .expect(200)
+      assert.equal(res.body.length, 1)
+      assert.equal(res.body[0].id, note.id)
+    });
+    it("should retreive all read=false notes for authed user", async function () {
+      const res = await request(app)
+        .get("/notes?read=false")
+        .expect(200)
+      assert.equal(res.body.length, 1)
+      assert.equal(res.body[0].id, note.id)
+    });
+  });
+
+  describe("GET /notes?title=<string>?regexp=true", function () {
     it("should get notes by title query", async function () {
       const {
         Teams: teams
@@ -132,7 +191,7 @@ describe('protected routes', function () {
         TeamId: teams[0].id,
         title: "NOPE"
       });
-      const found1 = await request(app).get("/search/notes").query({
+      const found1 = await request(app).get("/notes").query({
         title: "TI.*",
         regexp: true
       }).expect(200);
@@ -141,7 +200,7 @@ describe('protected routes', function () {
     });
   })
 
-  describe("GET /search/notes?tags=[...]", function () {
+  describe("GET /notes?tags=[...]", function () {
     it("should get notes by tags in query", async function () {
       const {
         Teams: teams
@@ -162,10 +221,10 @@ describe('protected routes', function () {
       await note1.reloadWithTags();
       await note2.addTag(tag2);
       await note2.reloadWithTags();
-      const found1 = await request(app).get("/search/notes").query({
+      const found1 = await request(app).get("/notes").query({
         tags: ['TAG1']
       }).expect(200);
-      const found2 = await request(app).get("/search/notes").query({
+      const found2 = await request(app).get("/notes").query({
         tags: ['TAG2']
       }).expect(200);
       assert.equal(found1.body[0].id, note1.id)
@@ -237,31 +296,36 @@ describe('protected routes', function () {
       assert.equal(res.body.name, "NAME")
     });
   })
-  describe("POST /note/:teams_id", function () {
+  describe("POST /notes?teamId=<TeamId>", function () {
+    const note = {
+      body: "BODY",
+      title: "TITLE",
+      slug: "SLUG"
+    };
     it("should NOT create a note for another :team_id", async function () {
       const otherTeam = await TeamFactory();
       const {
         body
       } = await request(app)
-        .post(`/teams/${otherTeam.id}/note`)
-        .send({})
-        .expect(404);
+        .post(`/notes`)
+        .query({
+          teamId: otherTeam.id
+        })
+        .send(note)
+        .expect(403);
     })
 
     it("should create a note for :team_id", async function () {
-
-      const note = {
-        body: "BODY",
-        title: "TITLE",
-        slug: "SLUG"
-      };
       const {
         Teams: teams
       } = await authedUser.reloadWithTeam();
       const {
         body
       } = await request(app)
-        .post(`/teams/${teams[0].id}/note`)
+        .post(`/notes`)
+        .query({
+          teamId: teams[0].id
+        })
         .send(note)
         .expect(201);
 
@@ -307,11 +371,11 @@ describe('protected routes', function () {
     });
   })
 
-  describe("GET /profile", function () {
+  describe("GET /users/profile", function () {
     it("should get the authed user", async function () {
 
       const res = await request(app)
-        .get(`/profile`)
+        .get(`/users/profile`)
         .expect(200);
 
       assert.equal(res.body.id, authedUser.id);

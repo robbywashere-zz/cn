@@ -56,6 +56,13 @@ describe('public routes', function () {
 
   describe("POST /user", function () {
 
+    it("should return Bad Request when missing required fields", function () {
+      return request(app)
+        .post('/user')
+        .expect(400)
+
+    })
+
     it("should create user", async function () {
       const {
         body
@@ -67,13 +74,10 @@ describe('public routes', function () {
           password: "bar",
           email: "foo@bar.com"
         });
-
       assert.equal(body.username, 'foo');
       assert.equal(body.email, 'foo@bar.com');
-      assert.equal(body.Teams.length, 1);
-
+      //assert.equal(body.Teams.length, 1);
     })
-
   });
 
 })

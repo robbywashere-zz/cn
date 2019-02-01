@@ -11,7 +11,7 @@ module.exports = {
     },
   },
   Scopes: {
-    belongingTo(userId) {
+    forUser(userId) {
       userId = userId.id || userId;
       return {
         where: {
@@ -25,14 +25,12 @@ module.exports = {
         }]
       }
     }
-
   },
   Init({
     User,
     Note
   }) {
     this.hasMany(Note);
-
     this.addScope('withUsers', {
       include: [{
         model: User,
